@@ -77,7 +77,7 @@
   * What do the represent?
   * How do they interact?
 ### CRC Cards
-![image-20210405145550859](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405145550859.png)
+![image-20210405145550859](./images/image-20210405145550859.png)
 
 **Class**: 
 
@@ -96,7 +96,7 @@ Cards can be moved and stacked and rearranged
 
 ### UML
 
-![image-20210405150432729](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405150432729.png)
+![image-20210405150432729](./images/image-20210405150432729.png)
 
 * UML is a general purpose visual modeling language developed by an industry consortium in 1997
 
@@ -120,7 +120,7 @@ Cards can be moved and stacked and rearranged
 
     * **Association** (most common)
 
-      ![image-20210405151142166](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405151142166.png)
+      ![image-20210405151142166](./images/image-20210405151142166.png)
 
       * An association is a simple semantic relationship between two objects that indicates a link or dependency between them
 
@@ -136,7 +136,7 @@ Cards can be moved and stacked and rearranged
         * 1:1...* at least one 
         * 1:0...1 at most one
 
-        ![image-20210405151325864](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405151325864.png)
+        ![image-20210405151325864](./images/image-20210405151325864.png)
 
         the solid triangle indicates how a human should interpret the relationship, it does not notate navigability 
 
@@ -144,7 +144,7 @@ Cards can be moved and stacked and rearranged
 
     * **Generalization**: 
 
-      ![image-20210405151804347](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405151804347.png)
+      ![image-20210405151804347](./images/image-20210405151804347.png)
 
       * grouping of entities based on common attributes
 
@@ -152,7 +152,7 @@ Cards can be moved and stacked and rearranged
 
       * more specific may inherit attributes/operations from the more general
 
-        ![image-20210405151822999](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405151822999.png)
+        ![image-20210405151822999](./images/image-20210405151822999.png)
 
       * In UML, `implements` is considered to be a form of generalization
 
@@ -182,7 +182,7 @@ A design pattern is a piece of advice on how to design your code
   * you have a list but you need a stack
   * solution: create a class that ranslating a list to a stack by adding the stack related functions
   * Consequences: you now use the list as if it is a stack
-* ![image-20210405152739380](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405152739380.png)
+* ![image-20210405152739380](./images/image-20210405152739380.png)
 
 **Composite Pattern**:
 * Allows you to represent tree-like data
@@ -220,13 +220,13 @@ A design pattern is a piece of advice on how to design your code
 * Then send the visitor to the node
 * The node calls back to the appropriate method of the visitor, then sends the visitor on to each of its children.
 
-![image-20210405154728797](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405154728797.png)
+![image-20210405154728797](./images/image-20210405154728797.png)
 
-![image-20210405154804843](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405154804843.png)
+![image-20210405154804843](./images/image-20210405154804843.png)
 
-![image-20210405154842755](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405154842755.png)
+![image-20210405154842755](./images/image-20210405154842755.png)
 
-![image-20210405154926102](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405154926102.png)
+![image-20210405154926102](./images/image-20210405154926102.png)
 
 ## Module 3: Software Architecture
 
@@ -243,7 +243,7 @@ A design pattern is a piece of advice on how to design your code
 
 #### Layered
 
-![image-20210405155447756](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405155447756.png)
+![image-20210405155447756](./images/image-20210405155447756.png)
 
 - Each layer depends on services from the layer or layers below
 - Organize teams by layer, different layers require different expertise
@@ -483,11 +483,11 @@ You can avoid complicated `.then` `.catch` chains using `async` and `await`.
 
   * In the example in class, we had one file `remoteService.ts` that provides HTTP methods
 
-  ![image-20210405193201949](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405193201949.png)
+  ![image-20210405193201949](./images/image-20210405193201949.png)
   
   * We also had `dataService.ts` which provides REST endpoints that a client can request from
   
-  ![image-20210405193243740](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405193243740.png)
+  ![image-20210405193243740](./images/image-20210405193243740.png)
   
   * axios did all the work in terms of actually creating the http requests
   
@@ -537,7 +537,7 @@ You can avoid complicated `.then` `.catch` chains using `async` and `await`.
     * **Manual tests**: require a human to run and evaluate; tests may ill-defined and deterministic, like trying to "break" the system
     * **Customer-facing tests:** require an intermediary to evaluate and the customer to use the software
     
-    ![image-20210405200220067](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405200220067.png)
+    ![image-20210405200220067](./images/image-20210405200220067.png)
 
 ### Test-Driven Development
 
@@ -547,7 +547,7 @@ You can avoid complicated `.then` `.catch` chains using `async` and `await`.
   * bug reports
   * internal feature requests
 
-![image-20210405200758157](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405200758157.png)
+![image-20210405200758157](./images/image-20210405200758157.png)
 
 #### Process
 * TASK ONE: Write a test
@@ -637,9 +637,9 @@ You can avoid complicated `.then` `.catch` chains using `async` and `await`.
 
   * But there are ways to limit number of branches (wont be covered in this course)
 
-  ![image-20210405204950212](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405204950212.png)
+  ![image-20210405204950212](./images/image-20210405204950212.png)
 
-  ![image-20210405205016918](C:\Users\miche\AppData\Roaming\Typora\typora-user-images\image-20210405205016918.png)
+  ![image-20210405205016918](./images/image-20210405205016918.png)
 
 ##### **Structural Test Criteria**
 
