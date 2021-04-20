@@ -889,11 +889,52 @@ A three-step process:
 ### Git 
 [I am not going to outline this, we should both know it]
 
+## Module 8: Code Improvement
 
+### Static Program Analysis
+* Program analysis that is done without running the program
+* Alternative to testing
+* Testing can only test finite, concrete cases --> We want to test unbounded, symbolic cases
 
+* Solution is **Program Verification**: Checks code against specification
+  * Caveats: Can only show absence of bugs, not presence. A verification failing doesn't mean there's a bug.
+  * Sometimes we cannot show either
+  * Time and $$$ is an issue
 
+* **Specification**: Precisely defines exactly the behavior a system should have
+  * A "full formal specification" is essentially a program
+  * Must be modular --> Without it, it'll be incomprehensible and unprovable
+  * Must be maintained with code
 
+* We want to find something between **Verification** and **Testing**: Bug finding!
+  * Partial verification: will find only some bugs
+  * Optional type systems
+  * Linters
+  * Quadrant of bug detection: False positive, true positive, true negative, false negative (these are exactly what you would expect) --> reducing false negatives often increases false positives, and vice-versa
 
+* Criteria for good automated program analyis
+  * Efficient and easy (shouldn't require whole program analysis)
+  * Rarely spurious (no more than 10% effectively false positive: i.e. a false positive that will cause a developer to act on it)
+  * Actionable (should point out easy-to-fix issues)
+  * Effective (problems are actually important)
 
+### Code Smells and Refactoring
 
+* Code smells: aka anti-patterns
+  * Common and known: each smell has [a name and a recommended fix](https://refactoring.guru/refactoring/smells) 
+  * Data class: class has public properties and few if any methods
+  * Duplicated code (...self explanatory)
+  * Too many parameters: A method has too many params
+
+* Refactoring: Code is reorganized
+  * Code's behavior is not changed: "topology preserving transformation"
+  * Reversible 
+  * Remove smells, improve code flexibility
+  * Can break code if done wrong: regression tests can help prevent this
+
+* Technical debt: sum of internal problems in your project code base
+  * NOT user-visible failures: code smells, missing tests, missing docs, out-of-date dependencies, etc
+  * Creates "interest" that is paid during maintenance 
+  * Good reasons to go into tech debt: Time-sensative stuff --> prototyping, fixing crit failure, getting product out the door
+  * Set aside time for tech debt
 
