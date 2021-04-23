@@ -889,11 +889,445 @@ A three-step process:
 ### Git 
 [I am not going to outline this, we should both know it]
 
+## Module 8: Code Improvement
+
+### Static Program Analysis
+* Program analysis that is done without running the program
+* Alternative to testing
+* Testing can only test finite, concrete cases --> We want to test unbounded, symbolic cases
+
+* Solution is **Program Verification**: Checks code against specification
+  * Caveats: Can only show absence of bugs, not presence. A verification failing doesn't mean there's a bug.
+  * Sometimes we cannot show either
+  * Time and $$$ is an issue
+
+* **Specification**: Precisely defines exactly the behavior a system should have
+  * A "full formal specification" is essentially a program
+  * Must be modular --> Without it, it'll be incomprehensible and unprovable
+  * Must be maintained with code
+
+* We want to find something between **Verification** and **Testing**: Bug finding!
+  * Partial verification: will find only some bugs
+  * Optional type systems
+  * Linters
+  * Quadrant of bug detection: False positive, true positive, true negative, false negative (these are exactly what you would expect) --> reducing false negatives often increases false positives, and vice-versa
+
+* Criteria for good automated program analyis
+  * Efficient and easy (shouldn't require whole program analysis)
+  * Rarely spurious (no more than 10% effectively false positive: i.e. a false positive that will cause a developer to act on it)
+  * Actionable (should point out easy-to-fix issues)
+  * Effective (problems are actually important)
+
+### Code Smells and Refactoring
+
+* Code smells: aka anti-patterns
+  * Common and known: each smell has [a name and a recommended fix](https://refactoring.guru/refactoring/smells) 
+  * Data class: class has public properties and few if any methods
+  * Duplicated code (...self explanatory)
+  * Too many parameters: A method has too many params
+
+* Refactoring: Code is reorganized
+  * Code's behavior is not changed: "topology preserving transformation"
+  * Reversible 
+  * Remove smells, improve code flexibility
+  * Can break code if done wrong: regression tests can help prevent this
+
+* Technical debt: sum of internal problems in your project code base
+  * NOT user-visible failures: code smells, missing tests, missing docs, out-of-date dependencies, etc
+  * Creates "interest" that is paid during maintenance 
+  * Good reasons to go into tech debt: Time-sensative stuff --> prototyping, fixing crit failure, getting product out the door
+  * Set aside time for tech debt
+
+## Module 9: Distributed systems and security
+
+### What is a distributed system?
+* Can do two things:
+  * Many servers talking through a network, and client isn't aware
+  * Many servers talking through a network, and client IS aware
+
+* Goals of distributed system:
+  * Scalability
+  * Performance
+  * Latency
+  * Availability: measured as uptime / (uptime + downtime)
+  * Fault Tolerance --> How do we handle failing disks, power outages, etc?
+
+* Challenges:
+  * More machines, more chances of failure
+  * Number of nodes + distance between them --> lowers performance and increases latency
+
+* 8 fallacies of distributed computing (things that are not true): 1-7 are due to physical properties of networks
+  1. The network is reliable
+  2. Latency is zero
+  3. Bandwith is infinite
+  4. The network is secure 
+  5. Typology doesn't change
+  6. Transport cost is zero
+  7. The network is homogenous
+  8. There is one administrator
+
+* Should we make our software distributed?
+  * Do we need to store more data than one computer can store?
+  * Do we need to process requests faster than one computer can?
+  * Are we willing and able to take on additional complications?
+
+### Strategies for building distributed systems
+* Recurring solutions:
+  * Partitioning
+  ![Partitioning](./images/Partitioning.png)
+  * Replication
+  ![Replication](./images/Replication.png)
+  * Particioning and Replication
+  ![PartitionAndReplicate](./images/PartitionAndReplicate.png)
+
+* Major issue with replication: consistency. How do we propogate updates across servers? 
+  * Server told to set value to "5" must tell all other servers to also set value to "5." Only when this is successful will the server update the value, thus ensuring sequential consistency...problem, this is not very fault tolerant.
+  * Fault tolerant solution: If the replica doesn't update, assume that it's offline, and update anyway...problem, what if it's the *network* that isn't working, and the replica isn't actually offline? Will break sequential consistency if a client can interact with the replica.
+  * Basically: We have a problem because two machines in a distributed system do not have a *shared fate.* This is called the "split brain" issue.
+  * **CAP Theorem:** You must pick two of three.
+    * Consistency: All nodes see same data at same time
+    * Availability: Individual node failures do not prevent survivors from operating
+    * Partition tolerance: The network still works as expected if some nodes can't communicate
+    * Realistically, we want to decide between Consistency and Availability, depending on which one is more important
+  * Byzantine failures: A replica sends back an "OK, I updated!" message when it didn't actually update
+
+### Software Engineering and Security Threats
+
+* CIA Properties
+  * Confidentiality: Is info disclosed to unauthorized individuals?
+  * Integrity: Is code or data tampered with?
+  * Availability: Is the system accessible and usable?
+
+* Threat: Potential event that could compromise security property
+* Attack: Realization of a threat
+* Vulnerability: Characteristic or flaw that, if exploited, could result in a compromise
+
+* Threat models:
+  * What are we defending?
+  * What kinds of malicious actors exist and what might they try?
+  * Who do we trust? --> Gotta trust SOMEONE (not remote users)
+
+* Things we can do to protect ourselves:
+  * Important security code (authentication, for example) should go in the backend
+  * Frontend shouldn't trust blindly that answer came from backend, and vice-versa (man-in-the-middle attacks) --> We can avoid this problem with SSL/encryption.
+
+* Some more complicated issues:
+  * Problem with SSL: Certificate Authorities (CA)  validate all websites (i.e. they will tell you that you are genuinely talking to Amazon) which create a "chain of trust" --> VERY BAD NEWS if CAs are compromised 
+  * Another nasty attack vector: Dependencies/third-party vendors. Attacker can put malware in dependencies (ESLint in 2018)
+  * Security rabbithole...
+
+### Engineering Secure Software
+
+* [OWASP Top Security Risks](https://owasp.org/www-project-top-ten)
+
+* Code injection
+  * Attacker is able to insert code as unsanitized data that could run...
+    * In our database (SQL injection)
+    * In our client (XSS) 
+    * Within the server (malformed requests that get processed --> See 2017 Equifax security breach)
+  * Fix: 
+    * Always sanitize our input. 
+    * Use tools like LGTM to detect vulnerable data flows
+    * Use middleware that side-steps the problem (e.g. return data as JSON, data gets put in React component)
+
+* Broken authentication + access control
+  * Fix:
+    * Implement multi-factor auth
+    * Implement weak-password checks
+    * Apply per-record access control
+    * Harden password reset pathways
+    * Rely on a trusted component instead of building auth yourself (auth0)
+    * DO NOT hard-code credentials EVER (e.g. DO NOT PUT API KEYS IN YOUR CODE) --> Automated checkers for this such as GitGuardian
+
+* Weakly protected sensitive data
+  * Fix
+    * Classify data by sensitivity and give sensitive data extra protection
+    * Encrypt sensitive data - in transit/at rest
+    * Make plan for data controls, stick to it
+    * Can we avoid storing sensitive data all together? I.e. do we need to store people's CC numbers? Can we just use Square or Paypal?
+
+* Using components with known vulnerabilities
+  * PAY ATTENTION TO DEPENDABOT UPDATES
+  * Problem: updating dependencies sometimes takes a lot of time/work, might not be necessary if the vulnerability is in a part of the dependency that isn't actually used in your code (i.e. a function that you never touch). Still, should always audit and make sure.
+
+## Module 10: Continuous Development
 
 
+### Software processes and continuous development
+* Software proess: A structured set of activities required to develop a software product, goal of minimizing risks
+  * Specification
+  * Design/implementation
+  * Validation
+  * Evolution
+
+* Verification and validation: quality assurance
+  * We want to create feedback loops to detect more bugs sooner
+  * Make sure that our software does everything it should do
+
+* We want to make sure that our software can evolve and change
+  * Note: Most software built on top of large/old codebases...99% of proprietary software uses some open source software
+
+* Software Processes
+  * Code-and-fix: really bad, really common. Build software and modify until customer satisfied.
+    * No means of assessing progress, difficult to coordinate multiple programmers
+    * Useful for "hacking" together small/individual projects
+    ![BandF](./images/BandF.png)
+  
+  * Waterfall model: Breaks software dev process into those four phases and explicitly builds in QA
+    * Experience applying steps in past projects can be used to estimate duration of "similar steps"
+    * Produces software artifacts that can be re-used
+    * Difficult accomodating change after process is underway: Must complete one phase before moving on to next
+    ![Waterfall](./images/Waterfall.png)
+  
+  * Agile model: Iterative model, where each iteration is several weeks long and results in several features being built
+    * "Sprint model": Each sprint is a cycle of the model
+    * Know that requirements always evolve
+    * Can get useful feedback from partial apps
+     ![Agile](./images/Agile.png)
+
+* Common goal: "Shift left" --> Find defects earlier in the software dev process, will cost less to fix
+* Continuous development: Like agile, but with fast feedback loop. Makes finding bugs faster, "shifts left"
+  * Formal mechanism for deploying and validating new code (test/staging/prod)
+  * Unblocks developers and increases velocity --> Less downtime for dev
+  ![ContinuousDev](./images/ContinuousDev.png)
+
+### Continuous integration 
+* Testing the right things at the right time: giving developers feedback on their changes
+* Continuously assemble and test our entire codebase. Automate build/test chunk of the feedback loop
+* Build systems: Automatically compile code and generate executables
+  * Make, mave, gradle, etc.
+  * Makes builds repeatable, reproducible, and standard
+  * Not just compilation. In parallel (as much as possible) we'd like to...
+    * Fetch and link dependencies
+    * Provision and teardown for integration testing
+    * Run tests
+    * Generate release archive
+* Things to consider:
+  * Pre-commit tests: Should we run small subset of tests before integrating changes?
+  * Do we test new changes one-by-one if multiple integrations are coming in? How do we manage a change queue?
+  * Do we run every test on every integration?
+  * Do we use mocks?
+
+* Small scale CI: Run everything on everything
+  ![SmallCI](./images/SmallCI.png)
+* Medium scale: Run different tests on different branches
+  ![MedCI](./images/MedCI.png)
+* Large scale CI (Google):
+  * Pre-submit optimization: run fast tests for each individual change
+  * Run all affected tests on a batch of commits; "build cop" monitors and acts immediately to roll-back or fix
+
+### Deployment Infranstructure
+* Back in the old days --> Manual deployment to private or shared machines. Copy files over, reset server.
+  * Does not scale at all...not to number of machines, number of programs, size of programs, or frequency of deployments
+* Make it slightly better...automate the file copying, monitor for anomalies
+  * Doesn't solve the problem of resource consumption: if more people use it, it needs more resources. But if no one usees it, don't need the resources. We don't want to have just one low-resource program running on the machine, so we deploy multiple programs (multitenacy). Problem...if one suddenly becomes popular, it can starve other programs out. 
+
+* Modern solutions:
+  * Things to consider:
+    * Centralization vs customization --> if we want really specific config, Heroku might not be the best choice
+    * How do we manage state?
+    * What is our expected scale?
+    * How much management do we want to do?
+  * Better multi-tenacy: virtualization! Each app gets its own VM
+    * Problem: each VM runs its own OS, not efficient use of resources
+    * Greatest degree of control, greatest cost, greatest latency
+  * Containerization: Docker. Lightweight containers, run on host machine OS, so less resources
+    * Better resource utilization than VMs
+  * Kubernetes: Will create Docker containers for different programs, will scale up or down if needed
+    * Gives you multi-tenacy and load-balancing, yay!
+  * You might not have an infra person...can we pay a service to make it work for you?
+    * Yep! Heroku, Netlify, etc. Pay per second that our code is up.
+    * Put a simple config file in our Git repo and Heroku handles load balancer in Amazon EC2 VM and bills us for how long we have our server up
+    * Similarly, Netlify distributes our frontend through their CDN, handles fault-tolerance for us, bills us
+    * Minimal degree of control, YMMV with cost
+  * Functions-as-a-services: We just have a few functions called infrequently, don't wanna pay for a VM/service to have them up constantly
+    * Can pay serverless provider to run a function when request, bill per millesecond when functions run
+    * AWS Lambda, Google Cloud Functions, etc.
+    * Can't store data
+    * Minimal degree of control, least latency, YMMV with cost
+
+### Continuous Delivery
+* How do we fix defects in the prod environment (or just before they make it in?)
+* Basic idea: "If stuff blows up, we want it to affect the least amount of people"
+* Release frequently, in small batches
+* Easier to detect specific impact and isolate quickly, rollback if buggy
+* If release can go out quickly/automatically, we can release multiple times a day!
+* Evaluate business impacts of new features by A/B testing:
+   ![ABTest](./images/ABTest.png)
+* Key aspect: Staging environments
+  * Deploy to a complete production-like environment with no users
+  * Can direct focus group to staging environment --> Either our own engineers or alpha/beta testers
+  * Lower risk than prod
+  * Go from dev env --> staging env --> prod env, with Q/A at each phase
+* DevOps
+  * Someone needs to monitor software post-deploy
+  * Whose job is it?
+  * Key tenant of DevOps: The people who make the changes own them from cradle to grave, regardless of platform (desktop, mobile, etc)
+  ![DevOps](./images/DevOps.png)
+* Note: Does not mean that all changes will be released as soon as they're made --> need to go through release pipeline first
+* Large organizations: Release engineer decides when something is "ready to go," oversees deployment
+* Monitoring: Track production (and staging) metrics
+  * Hardware (temperatures, fan speeds...)
+  * OS (memory usage, CPU load...)
+  * Middleware (Memory, thread/db connection pools...)
+  * Applications (Business transactions, conversion rates...)
+
+## Module 11: Engineering Equitable Software
+
+### Engineering Equitable Software
+* Power imbalance between software engineers and users
+* More complicated than "don't be evil" 
+* Examples:
+  * Algorithmic Bias: COMPAS Sentencing Tool --> Recidivism rate prediction
+    * White defendants had a higher false negative rate (labeled lower risk, did re-offend) and Black defendants had a higher false positive rate
+    * White defendants were given lower recidivism scores in general
+    * Algorithmic bias often due to hidden correlations
+  * Algorithmic Bias: Price Discrimination (the thing we were talking about the other day -- location based correlating to socioeconomic status)
+  * Climate impact: Machine Learning model training and development can have HUGE levels of CO2 emission
+  * Incusivity and Accessibility: Domonio's Pizza 
+    * Sued for not being accessible to the blind, argued that the ADA applied to physical locations only
+    * Supreme Court said "yes it does"
+  * Evading regulation: Volkswagen
+    * Volkswagen had customized software that reduced emissions when taking emissions test
+    * Misled both regulators and consumers
+  * Can be easy to make unequitable software -- but we should do the work
+
+### Ethics in Software Engineering
+* Professional ethics: Standards established for divinity, law, medicine, and engineering, among others. These professions are required to go through specific ethical training
+* Case study: Citi building engineering failure
+  * Failure discovered that could cause the building to fall over if a strong enough wind struck it from a particular direction
+  * Was fixed quickly, but in secret, without informing the public
+  * Was this the right thing to do?
+* Case study: Therac-25
+  * Bug in radiation machine failure caused at least 6 deaths and unknown injuries/disease
+  * Bug was undiscovered for 2 years
+  * Weak accountability in manufacturer's organization --> no testing plan, no code review, no safety checks
+  * Resulted in stronger checks in safety critical (ESPECIALLY medical) software
+* Code of Ethics: Not legally held to a code of ethics
+  * ACM has established a code of ethics for Software Engineers
+  * However, study found that simply exposing developers to ACM Code did not result in more ethical decision making 
+* Ethical decisions are hard decisions
+  * Example: Interactive AI systems can be useful, but can amplify hate. Do we continue to make them?
+* Accessibility should *not* be a hard decision
+  * i.e. Domino's should have absolutely made their software screenreader accessible
+  * Not that difficult, saves you a PR nightmare...and blind people buy pizza
+* Value Sensitive Design: Consider how software impacts users' universal values
+  * Human rights
+  * Accessibility
+  * Justice
+  * Privacy
+  * Human welfare
+* Unpacking "publlic interest"
+  * What are the implications of failures?
+  * Who will use the software, and how will they differ from each other?
+  * How will my software impact those who don't use it?
+  * Will the software amplify negative behavior for users and society at large?
+  * On the flipside, will our software do good?
 
 
+### Acceptance and Inclusivity Testing
+* Bias is the default: we are not our users and we bring our own biases
+  * Having diversity on the dev team is a great first step...but most dev teams do not reflect reality
+  * Example: Non-diverse dev team at Google led to a photo-tagging feature that labled photos of Black people as gorillas
+* People differ in a lot of cognitive ways as well: 
+  * Motivations
+  * Information processing stle
+  * Computer self-efficacy
+  * Risk averseness
+  * Tech learning style
+  * "Covering different facets will result in covering different genders" (so yeah, their thesis is basically women and men think differently ha)
+* GenderMag: "discount usability evaluation"
+  * Persona-based evaluation, basically step through an application pretending to be someone else
+* Curb-cut effect: Making things more inclusive benefits everyone!
+  * Curb-cuts benefit elderly, parents with strollers, etc.
+* Usability testing: Directly measure the usability of inclusivity of our software by having real users perform tasks
+  * Consider a diverse set of users
+  * He suggests doing this after GenderMag shit to "validate problems (and fixes)" identified in cognitive walkthroughs
+  * Evaluating accessbility: Have disabled users go through your website
+  * Can do live user studies with A/B testing --> We should be ethical about the types of studies we design
+    * Can assign people at random or test a specific demographic
 
+## Module 12: Estimation and Productivity
 
+### Planning Software Projects
+* The tern "software engineering" was created at NATO conference to fix the "software crisis" -- software was terrible because there was no method/theory for how to build software
+* Problems with software estimations
+  * Projects are very different with each other
+  * Different problems come up with each project
+* Gantt Charts: Before you even start designing the software, plan things!
+  * Come up with design and implementation tasks, identify dependencies between these tasks, estimate how long each task will take = estimation for whole project
+  * Problem with this approach: Very difficult to scale --> The "mythical man-month," you can't estimate how long a project will take based on "man hours" because it's often not partitionable, adding more people means adding more communication, etc.
+  * Other problem: You'll have no idea how long an individual task will take (especially if you haven't *designed* it yet)
+* Agile Methodology and Planning
+  * Break project into sprints
+  * Each fixed-length sprint is planned independently
+  * Planning might be a guess at first, but it gets better over time
+  * Backlog --> Big projects broken down into bite-sized chunks
+  * Two ways to estimate during planning meetings:
+    * Planning poker: Teams play cards with numbers with the number of hours they think will be required, the team as a whole then looks at the numbers, discuss, and come to a consensus (I've used this before, it's fun!)
+    * Story Points: Coarser, relative size of scope of each task (small, medium, large, etc.)
+  * How many communication links (number of pairs on the team) are on your team? Makes work harder, grows exponentially with team size
+    * Non-agile teams: One for frontend, one for backend, one for database, all very large
+    * Agile teams: Cross-cutting different parts of the stack, feature-based, small (5-9 people).
+  * Delivering on a deadline: need experience to estimate --> no silver bullet to determine how long a project will take
+  
+### Metrics in Software Engineering
+* Sprint velocity = story points completed / story points planned --> Are we staying on track and are our estimations good?
+* Lines of code (in general, per developer)
+  * Useless on its own, sometimes useful if looking at change over time
+* Code quality: Bugs open/closed, tests passing/failing
+* McCabe Cyclometric Complexity: Analyze complexity of method based on control flow 
+![Cyclometric](./images/Cyclometric.png)
+  * Edges - Nodes + 2 * Connected Components (he does not say what "connected components", but this graph has 1)
+* How rigidly do we follow quantitative metrics?
+  * More lines of code are not better
+  * Not finding bugs is not necessarily a good thing (you could just be ignoring them)
+  * McCabe metric doesn't really measure if the code is harder to read --> no correlation between cyclomatic complexity and errors/programmer comprehension/etc.
+* We should be very skeptical of applying metrics against our code, and we should *especially* be skeptical of evaluating people based on metrics
+  * McNamara fallacy: focus only on quantitative, easy-to-measure metrics and end up optimizing for the wrong thing
+  * People will just change their behaviors to meet those metrics (at the cost of being good developers)
+  * Extrinsic rewards are in general not a good strategy
 
+### Strategies for Successful Software Teams
+* Teams are important --> Don't fall for the starry-eyed portrayal of "the rock-star engineer"
+* Three pillars of social skills (I cannot believe we are getting an actual class on this, wow, they really have no faith in CS majors)
+  * Humility
+  * Respect
+  * Trust
+* Don't be an asshole in code review ("Man, you totally got that wrong")
+* Knowledge sharing is also important: it needs to scale linearly (or sub-linearly) with org growth
+  * Mentorship
+  * Q&A
+  * Mailing lists
+  * Tech talks
+  * Documentation
+* Bus Factor --> How many members of your team are irreplaceable? 
+* Failures are inevitable: in software, humans, and processes
+  * The important thing is to learn from them
+  * Post-mortems should happen after failures
+    * What went well?
+    * What went wrong?
+    * Where did we get lucky? 
+    * How do we prevent it from happening again?
+    * BAD APPROACH: Name, blame, and shame --> engineers are less likely to come forth with details about a failure, meaning that root causes are not being addressed
+    * GOOD APPROACH: Blameless post-mortem. No pre-conceived notion of who's at fault, even if it *really looks like* someone's fault, no blaming anyone. 
 
+### Measuring Engineering Productivity
+* Needs to be *some* way to measure improvement --> improving productivity is the whole point of software engineering
+* Common approach in research: analyze open-source projects
+  * Do some languages have more errors than others?
+  * Problem: lots of confounding variables
+* Use both quantitative and qualitative metrics
+* Don't use metrics to incentivize behavior (hopefully then people won't change their behavior)
+* Google case study: Does having readability reviewers help or hurt productivity?
+  * Goal/Signal/Metric framework.
+    * Goal: Desired end result 
+    * Signal: What we'd like to measure, but we can't
+    * Metric: A proxy for a signal, which can actually be measured
+  ![GoalFramework](./images/GoalFramework.png)
+* QUANTS components of engineering productivity
+  * Wuality of the code
+  * Attention from engineers
+  * Intellectual complexity
+  * Tempo and velocity
+  * Satisfaction
